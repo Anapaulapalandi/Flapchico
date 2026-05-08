@@ -1,54 +1,76 @@
-/*
-Raylib example file.
-This is an example main file for a simple raylib project.
-Use this as a starting point or replace it with your code.
-
-by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit https://creativecommons.org/publicdomain/zero/1.0/
-
-*/
-
+#include <stdio.h>
+#include <stdlib.h>
 #include "raylib.h"
+#include "resource_dir.h"	
 
-#include "resource_dir.h"	// utility header for SearchAndSetResourceDir
+#define GRAVITY 50
+
+typedef struct Chico {
+	Vector2 pos;
+	float velocity;
+	float col_radius;
+}Chico;
+
+typedef struct Pipe {
+	Vector2 pos;
+	float velocity;
+	int hg;
+	int wt;
+}Pipe;
+
+Chico player;
+Pipe test;
 
 int main ()
 {
-	// Tell the window to use vsync and work on high DPI displays
+
+	//Setup raylib//
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
-
-	// Create the window and OpenGL context
-	InitWindow(800, 600, "Hello Raylib");
-
-	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
+	InitWindow(800, 600, "Play Flapchico");
 	SearchAndSetResourceDir("resources");
 
-	// Load a texture from the resources directory
-	Texture wabbit = LoadTexture("wabbit_alpha.png");
+	//game init//
+	player.pos.x = 400;
+	player.pos.y = 300;
+
+	test.pos.x = 600;
+	test.pos.y = 300;
+	test.wt = 64;
+	test.hg = 128;
+	test.velocity = 35;
+
+	//Texture chico = LoadTexture("Chicao.png");
+	Texture2D chico = LoadTexture("Chicao.png");
 	
-	// game loop
-	while (!WindowShouldClose())		// run the loop until the user presses ESCAPE or presses the Close button on the window
+	
+	while (!WindowShouldClose())		
 	{
-		// drawing
+		//velocity
+		float dt = GetFrameTime();
+		player.velocity += GRAVITY*dt;
+		player.pos.y += player.velocity*dt;
+
+		//pipe walk
+		test.pos.x -= test.velocity * dt;
+
+		//drawing
 		BeginDrawing();
 
-		// Setup the back buffer for drawing (clear color and depth buffers)
-		ClearBackground(BLACK);
-
-		// draw some text using the default font
-		DrawText("Hello Raylib", 200,200,20,WHITE);
-
-		// draw our texture to the screen
-		DrawTexture(wabbit, 400, 200, WHITE);
 		
-		// end the frame and get ready for the next one  (display frame, poll input, etc...)
+		ClearBackground(WHITE);
+
+		DrawRectangle(test.pos.x, test.pos.y, test.wt, test.hg, YELLOW);
+		//DrawTexture(chico, player.pos.x,player.pos.y, GREEN);
+		DrawTextureEx(chico, player.pos, 0, 32.0f / chico.width, WHITE);
+		
+		
 		EndDrawing();
 	}
 
-	// cleanup
-	// unload our texture so it can be cleaned up
-	UnloadTexture(wabbit);
+	
+	UnloadTexture(chico);
 
-	// destroy the window and cleanup the OpenGL context
+	
 	CloseWindow();
 	return 0;
 }
