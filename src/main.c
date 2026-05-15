@@ -5,12 +5,13 @@
 
 #define GRAVITY 500
 #define MAX_PIPES 900
-#define SPAWN_MIN 2.0f
-#define PIPE_SPEED 50
+#define SPAWN_MIN 5.0f
+#define PIPE_SPEED 150
 #define MULTI 10
-#define SPAWN_MAX 6.0f
+#define SPAWN_MAX 8.0f
 
 int count = 0;
+int counti = 0;
 float timer = 0;
 float spawn_rate = SPAWN_MIN;
 
@@ -31,19 +32,10 @@ typedef struct Pipe {
     Color color;
 } Pipe;
 
-typedef struct PipeInvert {
-    Vector2 pos;
-    float velocity;
-    int hg;
-    int wt;
-    Color color;
-} PipeInvert;
-
 Chico player;
-Pipe pipe;
-PipeInvert pipei;
 
 Pipe* pipes[MAX_PIPES];
+Pipe* inverts[MAX_PIPES];
 
 Color GetRandomColor(void)
 {
@@ -57,31 +49,49 @@ Color GetRandomColor(void)
 }
 
 void spawnpipe() {
+    Color c = GetRandomColor();
     Pipe* p = malloc(sizeof(Pipe));
+    Pipe* i = malloc(sizeof(Pipe));
+
     p->pos.x =GetScreenWidth();
     p->pos.y = 300;
     p->velocity = PIPE_SPEED;
     p->wt = 32* MULTI;
     p->hg = 64* MULTI;
-    p->color = GetRandomColor();
-    pipes[count++] = p;
+    p->color = c;
+
+    i->pos.x = GetScreenWidth();
+    i->pos.y = 0;
+    i->velocity = PIPE_SPEED;
+    i->wt = 32 * MULTI;
+    i->hg = 64 * MULTI;
+    i->color = c;
+    pipes[count] = p;
+    inverts[count] = i;
+    count++;
 
 }
 
 void updatepipe(float dt) {
     for (int p = 0; p < count; p++) {
         Pipe* pipeaccess = pipes[p];
+        Pipe* i = inverts[p];
         pipeaccess->pos.x -= pipeaccess->velocity * dt;
+        i->pos.x -= i->velocity * dt;
     }
 }
 
-void drawpipes(Texture2D tex) {
+
+void drawpipes(Texture2D tex, Texture2D itex) {
     for (int p = 0; p < count; p++) {
         Pipe* pipeaccess = pipes[p];
+        Pipe* i = inverts[p];
         float pipeScale = (float)pipeaccess->wt / tex.width;
         DrawTextureEx(tex, pipeaccess->pos, 0, pipeScale,pipeaccess->color);
+        DrawTextureEx(itex, i->pos, 0, pipeScale, i->color);
     }
 }
+
 int main() {
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
     InitWindow(800, 600, "Play Flapchico");
@@ -120,7 +130,7 @@ int main() {
         player.velocity += GRAVITY * dt;
         player.pos.y += player.velocity * dt;
         updatepipe(dt);
-
+       
 
         BeginDrawing();
         ClearBackground(WHITE);
@@ -128,9 +138,12 @@ int main() {
 
         // Textura do pipe com scale proporcional
         
-        drawpipes(pipeTex);
+        drawpipes(pipeTex, pipeiTex);
+       
 
         DrawTextureEx(chicoTex, player.pos, 0, 100.0f / chicoTex.width , WHITE);
+
+
 
 
 
